@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/python3
 
 import cfscrape
 import sys
