@@ -1,4 +1,0 @@
-### GLOBAL CONFIG FILE
-
-AFLV_GRAB_DIR=/home/archuser1/Animu/Compartido/animeflv_grabber
-TMP_DIR=$AFLV_GRAB_DIR/tmp
