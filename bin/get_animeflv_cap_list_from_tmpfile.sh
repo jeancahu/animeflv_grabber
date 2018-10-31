@@ -1,11 +1,22 @@
 #!/bin/bash
 
-# Requiere que $1 sea la URL de la página de lista de capítulos
-# Requiere que $2 sea la dirección del tmp con el code de la página
+# Requiere que $1 sea la dirección del tmp con el code de la página
+declare TMP_FILE=$1
+declare CAP_PAGE='/ver/CODE/ANIME-'
+declare -i COUNTER=1
 
-
-ANIME_NAME=$( echo $1 | grep -o /\[a-z,A-Z,\-\]*$ | tr '/' '#' | sed s/'#'/''/ )
-TMP_FILE=$2
-cat $TMP_FILE | grep -o 'href=\"/ver/.\{0,20\}/'"$ANIME_NAME"'.\{0,4\}\" ' | cut --delimiter='"' -f 2 | sort
+if [ -f $TMP_FILE ]
+then
+    CAP_PAGE=${CAP_PAGE/ANIME/$( grep anime_info /tmp/temporal_5451.txt | cut -f3 --delimiter=',' | tr -d '"' )}
+    grep episodes $TMP_FILE | sed 's/\],\[/\n/g;s/.*\[\[//;s/\]\].*//' |
+	sort | cut -f 2 --delimiter=',' |
+	while read CODE
+	do
+	    echo "${CAP_PAGE/CODE/$CODE}$COUNTER"
+	    let COUNTER++
+	done
+else
+	exit 1
+fi
 
 exit 0
