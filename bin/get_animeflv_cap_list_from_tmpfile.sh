@@ -7,7 +7,7 @@ declare -i COUNTER=1
 
 if [ -f $TMP_FILE ]
 then
-    CAP_PAGE=${CAP_PAGE/ANIME/$( grep anime_info /tmp/temporal_5451.txt | cut -f3 --delimiter=',' | tr -d '"' )}
+    CAP_PAGE=${CAP_PAGE/ANIME/$( grep anime_info $TMP_FILE | cut -f3 --delimiter=',' | tr -d '"\r];' )}
     grep episodes $TMP_FILE | sed 's/\],\[/\n/g;s/.*\[\[//;s/\]\].*//' |
 	sort | cut -f 2 --delimiter=',' |
 	while read CODE

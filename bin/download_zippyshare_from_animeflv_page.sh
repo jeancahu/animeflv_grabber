@@ -7,7 +7,19 @@ echo $TMP_FILE
 echo 'Código guardado en '"$TMP_FILE"
 echo 'Descargando el fichero de ZippyShare'
 URL=$( bash ./get_zippyurl_from_animeflv_page_code.sh $TMP_FILE )
-echo $URL
+
+ANIME_ID=$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'anime_id' | sed 's/.*=//' )
+EPISODE_ID=$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_id' | sed 's/.*=//' )
+EPISODE_NUM=$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_num' | sed 's/.*=//' )
+
+echo "
+URL: $URL
+ANIME_ID: $ANIME_ID
+EPISODE_ID: $EPISODE_ID
+EPISODE_NUM: $EPISODE_NUM
+"
+
+# Download
 plowdown "$URL"
 
 ## HACK

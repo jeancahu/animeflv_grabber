@@ -4,6 +4,7 @@
 
 echo 'Generando el fichero temporal con el code de la página lista'
 TMP_FILE=$( bash ./download_animeflv_page_code.sh $1 )
+echo 'El fichero temporal es '"$TMP_FILE"
 echo 'Obteniendo la lista de capítulos del code HTML'
 LIST=$( bash ./get_animeflv_cap_list_from_tmpfile.sh $TMP_FILE )
 echo ${LIST[@]}
