@@ -13,7 +13,7 @@ echo 'Iniciando descarga de vídeos'
 for PAGE in $LIST
 do
         echo "Descargando de: https://www.animeflv.net""$PAGE"
-	bash ./download_zippyshare_from_animeflv_page.sh "https://www.animeflv.net""$PAGE"	
+	bash ./download_video_from_animeflv_page.sh "https://www.animeflv.net""$PAGE"	
 done
 echo 'Descargas finalizadas'
 

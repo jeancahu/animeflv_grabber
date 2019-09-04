@@ -1,9 +1,8 @@
 #!/bin/bash
 
-#LIST=( $( cat index.html | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) ) # Esto crea un ARRAY con la lista de animes de hoy desde el html de la página
-
 # lista de animes de hoy desde el html de la página
-LIST=( $( wget -o /dev/null 'https://www.animeflv.net' -O - | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) ) # Esto crea un ARRAY con la 
+#LIST=( $( wget -o /dev/null 'https://www.animeflv.net' -O - | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) ) # Esto crea un ARRAY con la
+LIST=( $( python3 ../src/cloudflare_ninja.py 'https://www.animeflv.net' | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) ) # Esto crea un ARRAY con la
 
 declare -a NUMERALS=( {0..9} {a..z} )
 declare -i COUNTER=0
@@ -15,12 +14,12 @@ echo ${LIST[*]} | tr ' ' '\n' | cut --delimiter='/' -f 4 |
     do
 	printf "\t${NUMERALS[$COUNTER]}\t$LINE\n"
 	let COUNTER++
-    done
+    done | tr '-' ' '
 
 echo -ne '\n Desea descargar alguno? (Y/n/#) '
 
 OPTION=''
-while [[ $OPTION != [1-9a-zYN] ]]
+while [[ $OPTION != [0-9a-zYN] ]]
 do
     read -n 1 OPTION
 done
@@ -36,10 +35,10 @@ else
 	read -p 'Cual? ' NUMBER
     else
 	NUMBER=$OPTION
-    fi   
+    fi
 fi
 
-if [[ $NUMBER == [a-z] ]] 
+if [[ $NUMBER == [a-z] ]]
 then
     NUMBER=$( bash -c '
     declare -i COUNTER=0
@@ -60,6 +59,10 @@ echo "El URL del anime es: $URL"
 
 # Se descarga el anime con:
 
-bash ./download_zippyshare_from_animeflv_page.sh "$URL"
+bash ./download_video_from_animeflv_page.sh "$URL"
+
+## Post script:
+
+bash ./refresh_anime_list.sh > ./list.html
 
 exit 0

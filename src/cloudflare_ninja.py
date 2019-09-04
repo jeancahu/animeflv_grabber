@@ -11,9 +11,12 @@ except:
     quit(1)
 
 scraper = cfscrape.create_scraper()
+content = scraper.get(url)
+content = str(content.content).replace('\\n','\n')
+content = content.replace('\\r', '')
 
 try:
-    print (scraper.get(url).content)
+    print(content)
     quit(0)
 except:
     quit(2)
