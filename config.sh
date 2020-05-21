@@ -3,9 +3,9 @@
 if [ -f include/HEAD ]
 then
     :
-else	
+else
     if [-d include ]
-    then	 
+    then
 	:
     else
 	mkdir include
@@ -16,11 +16,6 @@ else
 AFLV_GRAB_DIR='"$PWD"'
 TMP_DIR=$AFLV_GRAB_DIR/tmp
 DOWNLOAD_TOOL=cloudflare_ninja.py
-#DOWNLOAD_TOOL=wget_download.sh' > include/HEAD
 fi
-
-#if [ -z $( grep AFLV_GRAB_DIR ~/.bashrc ) ] ; then
-#    echo 'export AFLV_GRAB_DIR='"$PWD" >> ~/.bashrc
-#fi
 
 exit 0
