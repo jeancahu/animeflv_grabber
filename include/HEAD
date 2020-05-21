@@ -1,6 +1,0 @@
-### GLOBAL CONFIG FILE
-     
-# AFLV_GRAB_DIR=/home/archuser1/Homura/Compartido/animeflv_grabber
-TMP_DIR=$AFLV_GRAB_DIR/tmp
-DOWNLOAD_TOOL=cloudflare_ninja.py
-#DOWNLOAD_TOOL=wget_download.sh

@@ -1,18 +1,26 @@
 # animeflv_grabber
-Download anime from animeflv, I did it just for fun.
+Download video from animeflv (spanish subs)
 
-In the repository do, that create HEAD file with Bash variables:
-	
-	bash config.sh
-	
-Install cfscrape from pip3 or apt.
-	
-	sudo pip3 cfscrape || sudo apt install python-cfscrape
-	
-Go to bin/ directory in repository and execute.
+Install cfscrape from pip3, pacman or APT
 
-	bash download_from_animeflv_last_anime_list.sh
-	
+	sudo pip3 cfscrape || sudo pacman -S python-cfscrape || sudo apt install python-cfscrape
+
+Install plowshare with pacman or APT
+
+	sudo pacman -S plowshare || sudo apt install plowshare
+
+Install youtube-dl, using pacman or APT
+
+	sudo pacman -S youtube-dl || sudo apt install youtube-dl
+
+Install megadl, mega CLI - download tool with pacman or APT
+
+	sudo pacman -S megatools || sudo apt install megatools
+
+Execute the script in directory ./bash
+
+	bash ./bash/download_from_animeflv_last_anime_list.sh
+
 That command shall show to you the anime emission list,
 if you select a number then program use scraper for
 download the video.

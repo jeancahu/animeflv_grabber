@@ -7,9 +7,12 @@
 
 ## Anime list
 
-function cloudflare_ninja_anime_list ()
+TMP_DIR=/tmp/anime_grabber
+test -d $TMP_DIR || mkdir $TMP_DIR
+
+function cloudflare_ninja ()
 {
-    URL='https://www.animeflv.net'
+    URL=$1
     echo -ne $( python3 -c "
 import cfscrape
 
@@ -23,12 +26,11 @@ try:
     print(content)
 except:
     quit(1)    
-" ) | grep 'class..fa-play\"' | grep -v '^<li' |
-    cut --delimiter='"' -f 2
+" )
 }
 
 # lista de animes de hoy desde el html de la página
-LIST=( $( cloudflare_ninja_anime_list ) )
+LIST=( $( cloudflare_ninja 'https://www.animeflv.net' | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) )
 
 if [ "$LIST" ]
 then :
@@ -139,12 +141,10 @@ function download_cap ()
 
 function download_animeflv_page_code ()
 {
-    source ../include/HEAD
-
     # $1 is the page URL
 
     ## Mode 1
-    python3 ../src/$DOWNLOAD_TOOL $1 > "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt"
+    cloudflare_ninja $1 > "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt"
 
     ## Mode 2
     # wget $1 -O "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt" &>/dev/null
