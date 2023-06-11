@@ -25,12 +25,12 @@ content = str(content.content)
 try:
     print(content)
 except:
-    quit(1)    
+    quit(1)
 " )
 }
 
 # lista de animes de hoy desde el html de la página
-LIST=( $( cloudflare_ninja 'https://www.animeflv.net' | grep 'class..fa-play\"' | grep -v '^<li' | cut --delimiter='"' -f 2 ) )
+LIST=( $( cloudflare_ninja 'https://www.animeflv.net' | grep 'class..fa-play\"' 2>/dev/null| grep -v '^<li' | cut --delimiter='"' -f 2 ) )
 
 if [ "$LIST" ]
 then :
@@ -41,42 +41,35 @@ fi
 
 
 ## Functions
+function print_green () {
+    printf "\033[92m$*\033[0m"
+}
 
-function rename_cap ()
-{
-    ORG_NAME=$1
-    NEW_NAME=$2
-    # Rename a cap with cap number if that exists
-    CAP_TMP_NAME="$( find ./ -name ${ORG_NAME}'*' | head -n 1 )"
+function print_yellow(){
+    printf "\033[93m$*\033[0m"
+}
 
-    if [ $CAP_TMP_NAME ]
-    then
-	echo "Cap actual name: $CAP_TMP_NAME"
-	echo "Cap new name: $NEW_NAME"
-	mv $CAP_TMP_NAME $NEW_NAME
-	return 0
-    else
-	return 1
-    fi
+function print_red(){
+    printf "\033[91m$*\033[0m"
 }
 
 function get_megaurl_from_animeflv_page_code ()
 {
     # $1 is the file of the html code from animeflv page.
     {
-	# grep -o 'http://ouo.*mega[^"]*' $1 | cut -f 2 --delimiter='='
-	cat $1 | tr -d '\\' | grep -o 'https[^"]*mega[^"]*'
+  # grep -o 'http://ouo.*mega[^"]*' $1 | cut -f 2 --delimiter='='
+   tr -d '\\' </dev/stdin | grep -o 'https[^"]*mega[^"]*'
     } | sed 's/%2F/\//g;s/%3A/:/;s/%23/\#/g;s/%21/\!/g;s/ class//;s/"//g' |
-	grep -v 'embed' |
-	sort | uniq | head -n 1
+  grep -v 'embed' |
+  sort | uniq | head -n 1
 }
 
 function get_zippyurl_from_animeflv_page_code ()
 {
     # $1 is the file of the html code from animeflv page.
     grep -o http://ouo.*zippyshare.*file.html $1 | cut -f 2 --delimiter='=' |
-	sed 's/%2F/%/g;s/%3A/:/' | tr '%' '/' | cut -f 1 --delimiter=' ' |
-	tr -d '" ' | uniq
+  sed 's/%2F/%/g;s/%3A/:/' | tr '%' '/' | cut -f 1 --delimiter=' ' |
+  tr -d '" ' | uniq
 }
 
 function get_rapidvideourl_from_animeflv_page_code ()
@@ -86,10 +79,10 @@ function get_rapidvideourl_from_animeflv_page_code ()
 
     # $1 is the file of the html code from animeflv page.
     URL=$(
-	grep '^ *video\[.\]' $1 | sed 's/.*src=//' |
-	    grep 'rv\&value' | sed 's/^.*rv\&value=//;s/\".*$//' |
-	    head -n 1 |
-	    echo "https://www.rapidvideo.com/$SERVER_DIR/$( tee )"'&q='"$QUALITY"
+  grep '^ *video\[.\]' $1 | sed 's/.*src=//' |
+      grep 'rv\&value' | sed 's/^.*rv\&value=//;s/\".*$//' |
+      head -n 1 |
+      echo "https://www.rapidvideo.com/$SERVER_DIR/$( tee )"'&q='"$QUALITY"
        )
 
     # Actually we don't need the original URL
@@ -106,37 +99,11 @@ function get_maruvideourl_from_animeflv_page_code ()
 
     # $1 is the file of the html code from animeflv page.
     URL=$(
-	grep 'server=maru' $1 | grep -o 'budyak\.rus#[^\]*' |
-	    sed 's/^.*#//'
+  grep 'server=maru' $1 | grep -o 'budyak\.rus#[^\]*' |
+      sed 's/^.*#//'
        )
 
     echo "${URL_BASE}${URL}"'.html?time=NaN'
-}
-
-function download_cap ()
-{
-    S_TOOL=$1
-    S_SERV=$2
-    S_SCRI=$3
-    [ -e "${ANIME_ID}_${EPISODE_NUM}.mp4" ] && return 0
-    URL=$( ${S_SCRI} $TMP_FILE )
-    echo 'Descargar por '"${S_SERV}"
-    [ "$URL" ] && case "${S_TOOL}" in
-	wget)
-	    wget -O "${ANIME_ID}_${EPISODE_NUM}.mp4" "$URL"
-	    ;;
-	*)
-	    ${S_TOOL} "$URL"
-    esac
-    case "${S_SERV}" in
-	Mega|Maru)
-	    sleep 0.1 ; rename_cap "${ANIME_ID}_${EPISODE_NUM}" "${ANIME_ID}_${EPISODE_NUM}.mp4"
-	    ;;
-	*)
-	    :
-	    ;;
-    esac
-    return 0
 }
 
 function download_animeflv_page_code ()
@@ -144,61 +111,62 @@ function download_animeflv_page_code ()
     # $1 is the page URL
 
     ## Mode 1
-    cloudflare_ninja $1 > "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt"
+    cloudflare_ninja $1
 
     ## Mode 2
-    # wget $1 -O "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt" &>/dev/null
-
-    ## Mode 3
     # curl $1 > "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt"
 
     ## Return result
     echo "$TMP_DIR/temporal_""$( echo $1 | tr '/' '#' | cut --delimiter='#' -f 5 )"".txt"
 }
 
-function download_video_from_animeflv_page ()
+function scan_video_urls_from_animeflv_page ()
 {
     # $1 is the page URL
-    echo 'Obteniendo el código de la página y guardándolo en un fichero temporal'
-    declare -xr TMP_FILE=$( download_animeflv_page_code $1 )
-    echo $TMP_FILE
-    echo 'Código guardado en '"$TMP_FILE"
-    echo 'Descargando el fichero de ZippyShare'
+    echo 'Obteniendo el código de la página'
+    declare -xr TMP_FILE="$( download_animeflv_page_code $1 )"
 
-    declare -rx ANIME_ID="$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'anime_id' | sed 's/.*=//' | grep -o '[0-9]*' )"
-    declare -rx EPISODE_ID="$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_id' | sed 's/.*=//' | grep -o '[0-9]*' )"
-    declare -rx EPISODE_NUM="$( grep 'var' $TMP_FILE | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_num' | sed 's/.*=//' | grep -o '[0-9]*' )"
+    declare -rx ANIME_ID="$(
+    echo "$TMP_FILE" | grep 'var' | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'anime_id' | sed 's/.*=//' | grep -o '[0-9]*' )"
+
+    declare -rx EPISODE_ID="$(
+    echo "$TMP_FILE" | grep 'var' | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_id' | sed 's/.*=//' | grep -o '[0-9]*' )"
+
+    declare -rx EPISODE_NUM="$(
+    echo "$TMP_FILE" | grep 'var' | sed 's/^[\t ]*//;s/var *//' | tr -d ' ;' | grep 'episode_num' | sed 's/.*=//' | grep -o '[0-9]*' )"
 
     echo "
-ANIME_ID: $ANIME_ID
-EPISODE_ID: $EPISODE_ID
-EPISODE_NUM: $EPISODE_NUM
+    -> ANIME_ID: $ANIME_ID
+    -> EPISODE_ID: $EPISODE_ID
+    -> EPISODE_NUM: $EPISODE_NUM
 "
+    # Print URLs
 
-    # # Download
-    # Download by Mega
-    download_cap 'megadl' 'Mega' 'get_megaurl_from_animeflv_page_code'
+    print_red 'Mega URL -> '
+    echo $TMP_FILE | get_megaurl_from_animeflv_page_code
+    echo ''
 
-    # Download by RapidVideo
-    download_cap 'wget' 'RapidVideo' 'get_rapidvideourl_from_animeflv_page_code'
+    exit 0
 
-    # Download by ZippyShare
-    download_cap 'plowdown' 'ZippyShare' 'get_zippyurl_from_animeflv_page_code'
+    print_red 'RapidVideo URL ->'
+    get_rapidvideourl_from_animeflv_page_code $TMP_FILE
+    echo ''
 
-    # Download by Maru
-    download_cap 'youtube-dl' 'Maru' 'get_maruvideourl_from_animeflv_page_code'
+    print_red 'ZippyShare URL ->'
+    get_zippyurl_from_animeflv_page_code $TMP_FILE
+    echo ''
 
-    # Download error
-    [ -e "${ANIME_ID}_${EPISODE_NUM}.mp4" ] && exit 1
-
-    echo 'Fichero descargado, gracias.'
-    
+    print_red 'Maru URL ->'
+    get_maruvideourl_from_animeflv_page_code $TMP_FILE
+    echo ''
 }
 
 declare -a NUMERALS=( {0..9} {a..z} )
 declare -i COUNTER=0
 
-echo -e '\nLista de animes disponibles al día de hoy:\n'
+print_yellow 'Lista de animes disponibles al día de hoy:
+
+'
 
 for LINE in $( echo ${LIST[*]} | tr ' ' '\n' | cut --delimiter='/' -f 3 )
 do
@@ -206,7 +174,9 @@ do
     let COUNTER++
 done | tr '-' ' '
 
-echo -ne '\n Desea descargar alguno? (Y/n/#) '
+print_yellow '
+Desea escanear alguno? (Y/n/#)
+'
 
 OPTION=''
 while [[ $OPTION != [0-9a-zYN] ]]
@@ -222,9 +192,9 @@ then
 else
     if [ "${OPTION,}" == 'y' ] || [ "${OPTION}" == '' ]
     then
-	read -p 'Cual? ' NUMBER
+  read -p 'Cual? ' NUMBER
     else
-	NUMBER=$OPTION
+  NUMBER=$OPTION
     fi
 fi
 
@@ -234,7 +204,7 @@ then
     declare -i COUNTER=0
     for NUM in {a..'"$NUMBER"'}
     do
-	let COUNTER++
+  let COUNTER++
     done
     echo $(( COUNTER + 9 ))' )
 else
@@ -244,9 +214,12 @@ fi
 # Comprobar que NUMBER es un número
 URL='https://www.animeflv.net'"${LIST[$NUMBER]}" # Esta es la URL del anime deseado
 
-echo "Anime URL is: $URL"
+print_red "
+-- >> Anime URL: $URL << --
 
-# Download Anime using the next function
-download_video_from_animeflv_page "$URL"
+"
+
+# Scan Anime video urls using the next function
+scan_video_urls_from_animeflv_page "$URL"
 
 exit 0
