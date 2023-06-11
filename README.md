@@ -1,26 +1,15 @@
-# animeflv_grabber
-Download video from animeflv (spanish subs)
+# AnimeFLV CLI
 
-Install cfscrape from pip3, pacman or APT
+This tool list AnimeFLV video URLs from the terminal _for educational purposes_.
 
-	sudo pip3 cfscrape || sudo pacman -S python-cfscrape || sudo apt install python-cfscrape
+Install cfscrape
 
-Install plowshare with pacman or APT
+    pip3 cfscrape
 
-	sudo pacman -S plowshare || sudo apt install plowshare
+Execute the script
 
-Install youtube-dl, using pacman or APT
+    bash scan_animeflv_ongoing_animes.sh
 
-	sudo pacman -S youtube-dl || sudo apt install youtube-dl
-
-Install megadl, mega CLI - download tool with pacman or APT
-
-	sudo pacman -S megatools || sudo apt install megatools
-
-Execute the script in directory ./bash
-
-	bash ./bash/download_from_animeflv_last_anime_list.sh
-
-That command shall show to you the anime emission list,
-if you select a number then program use scraper for
-download the video.
+Last command shall show anime emission list to you.
+Select a number then the program use _cfscrape_ to obtain
+the video URLs.
