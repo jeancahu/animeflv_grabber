@@ -4,7 +4,7 @@ This tool list AnimeFLV video URLs from the terminal _for educational purposes_.
 
 Install cfscrape
 
-    pip3 cfscrape
+    pip3 install cfscrape
 
 Execute the script
 
