@@ -58,53 +58,12 @@ function get_megaurl_from_animeflv_page_code ()
     # $1 is the file of the html code from animeflv page.
     {
   # grep -o 'http://ouo.*mega[^"]*' $1 | cut -f 2 --delimiter='='
-   tr -d '\\' </dev/stdin | grep -o 'https[^"]*mega[^"]*'
+   tr -d '\\' </dev/stdin | grep -o 'https[^"]*mega\.[^"]*'
     } | sed 's/%2F/\//g;s/%3A/:/;s/%23/\#/g;s/%21/\!/g;s/ class//;s/"//g' |
   grep -v 'embed' |
   sort | uniq | head -n 1
 }
 
-function get_zippyurl_from_animeflv_page_code ()
-{
-    # $1 is the file of the html code from animeflv page.
-    grep -o http://ouo.*zippyshare.*file.html $1 | cut -f 2 --delimiter='=' |
-  sed 's/%2F/%/g;s/%3A/:/' | tr '%' '/' | cut -f 1 --delimiter=' ' |
-  tr -d '" ' | uniq
-}
-
-function get_rapidvideourl_from_animeflv_page_code ()
-{
-    declare SERVER_DIR='e'
-    declare QUALITY='720p'
-
-    # $1 is the file of the html code from animeflv page.
-    URL=$(
-  grep '^ *video\[.\]' $1 | sed 's/.*src=//' |
-      grep 'rv\&value' | sed 's/^.*rv\&value=//;s/\".*$//' |
-      head -n 1 |
-      echo "https://www.rapidvideo.com/$SERVER_DIR/$( tee )"'&q='"$QUALITY"
-       )
-
-    # Actually we don't need the original URL
-    # echo $URL
-
-    curl "$URL" 2>/dev/null | grep -o 'https[^"]*\.mp4' | tail -n 1
-}
-
-function get_maruvideourl_from_animeflv_page_code ()
-{
-    URL_BASE='https://my.mail.ru/mail/budyak.rus/video/_myvideo/'
-    declare SERVER_DIR='e'
-    declare QUALITY='720p'
-
-    # $1 is the file of the html code from animeflv page.
-    URL=$(
-  grep 'server=maru' $1 | grep -o 'budyak\.rus#[^\]*' |
-      sed 's/^.*#//'
-       )
-
-    echo "${URL_BASE}${URL}"'.html?time=NaN'
-}
 
 function download_animeflv_page_code ()
 {
@@ -141,24 +100,14 @@ function scan_video_urls_from_animeflv_page ()
     -> EPISODE_NUM: $EPISODE_NUM
 "
     # Print URLs
+    #print_red 'Mega URL -> '
+    #echo $TMP_FILE | get_megaurl_from_animeflv_page_code
+    #echo ''
 
-    print_red 'Mega URL -> '
-    echo $TMP_FILE | get_megaurl_from_animeflv_page_code
+    print_red "Scraped URLs:"
     echo ''
-
-    exit 0
-
-    print_red 'RapidVideo URL ->'
-    get_rapidvideourl_from_animeflv_page_code $TMP_FILE
-    echo ''
-
-    print_red 'ZippyShare URL ->'
-    get_zippyurl_from_animeflv_page_code $TMP_FILE
-    echo ''
-
-    print_red 'Maru URL ->'
-    get_maruvideourl_from_animeflv_page_code $TMP_FILE
-    echo ''
+    echo $TMP_FILE | grep -o 'var *videos.*mega[^;]*' | grep '\([^,]*title[^,]*\|\|[^"]*http[^"]*\)' -o |
+        tr -d '\\' | sed 's/http/\thttp/;s/"//g;s/title:/ -> /'
 }
 
 declare -a NUMERALS=( {0..9} {a..z} )
@@ -170,7 +119,8 @@ print_yellow 'Lista de animes disponibles al día de hoy:
 
 for LINE in $( echo ${LIST[*]} | tr ' ' '\n' | cut --delimiter='/' -f 3 )
 do
-    printf "\t${NUMERALS[$COUNTER]}\t$LINE\n"
+    print_green "\t${NUMERALS[$COUNTER]}"
+    print_green "\t$LINE\n"
     let COUNTER++
 done | tr '-' ' '
 
